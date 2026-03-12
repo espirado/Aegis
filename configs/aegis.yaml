@@ -1,0 +1,46 @@
+# AEGIS Configuration
+# Override with AEGIS_CONFIG_PATH environment variable
+
+proxy:
+  listen_addr: ":8080"
+  agent_url: "http://localhost:9000"
+  read_timeout: 30s
+  write_timeout: 30s
+
+thresholds:
+  auto_proceed: 0.85
+  hold_and_notify: 0.60
+  phi_multiplier: 1.5
+
+classifier:
+  model_path: "ml/models/classifier_v1.onnx"
+  max_input_len: 512
+  inference_timeout: 10ms
+
+auditor:
+  api_endpoint: ""  # Set via AEGIS_AUDITOR_API_ENDPOINT env var
+  api_model: "claude-haiku-4-5-20251001"
+  timeout: 5s
+
+sanitizer:
+  ner_model_path: "ml/models/phi_ner_v1.onnx"
+  redact_mode: "block"  # "redact" or "block"
+
+notify:
+  webhook_url: ""  # Set via AEGIS_NOTIFY_WEBHOOK env var
+  timeout: 30s
+  default_on_timeout: "proceed"  # "proceed" or "block"
+
+audit:
+  output: "stdout"  # "stdout", "file", or "both"
+  file_path: "/var/log/aegis/audit.jsonl"
+  redact_flagged_content: true  # Hash flagged content instead of storing verbatim
+
+metrics:
+  enabled: true
+  listen_addr: ":9090"
+  path: "/metrics"
+
+logging:
+  level: "info"  # debug, info, warn, error
+  format: "json"

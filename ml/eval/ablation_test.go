@@ -112,29 +112,31 @@ func TestAblationStudy(t *testing.T) {
 
 		var latencies []float64
 
-		// Process attack samples
+		// Process attack samples: evaluate each layer independently, OR their decisions.
 		for _, s := range advSubset {
 			start := time.Now()
-			blocked := false
+			l1Blocked := false
+			l2Blocked := false
 
-			// L1: simulate classifier detection (these are known attacks, so L1 flags them)
+			l1Class := types.InputClass(s.Label)
+
 			if cfg.UseL1 {
-				l1Class := types.InputClass(s.Label)
-				if l1Class != types.ClassBenign {
-					blocked = true
-				}
+				l1Blocked = l1Class != types.ClassBenign
+			}
 
-				// L2: auditor check for additional verification
-				if cfg.UseL2 && blocked {
-					l1Result := &types.ClassificationResult{Class: l1Class, Confidence: 0.75}
-					ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-					auditResult, err := aud.Evaluate(ctx, s.Text, "", nil, l1Result)
-					cancel()
-					if err == nil {
-						blocked = auditResult.Verdict == types.VerdictBlock || auditResult.Verdict == types.VerdictHold
-					}
+			if cfg.UseL2 {
+				l1Result := &types.ClassificationResult{Class: l1Class, Confidence: 0.75}
+				ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+				auditResult, err := aud.Evaluate(ctx, s.Text, "", nil, l1Result)
+				cancel()
+				if err == nil {
+					l2Blocked = auditResult.Verdict == types.VerdictBlock || auditResult.Verdict == types.VerdictHold
+				} else {
+					l2Blocked = true // fail closed
 				}
 			}
+
+			blocked := l1Blocked || l2Blocked
 
 			latMs := float64(time.Since(start).Milliseconds())
 			latencies = append(latencies, latMs)
@@ -159,29 +161,32 @@ func TestAblationStudy(t *testing.T) {
 			lr.ByType[s.AttackType] = tr
 		}
 
-		// Process benign samples (check false positives)
+		// Process benign samples: evaluate each layer independently for FPR.
 		for _, s := range benSubset {
-			blocked := false
+			l1Blocked := false
+			l2Blocked := false
 
 			if cfg.UseL1 {
-				// Benign samples: L1 classifies as benign → not blocked
-				blocked = false
+				l1Blocked = types.InputClass(s.Label) != types.ClassBenign
+			}
 
-				if cfg.UseL2 && blocked {
-					l1Result := &types.ClassificationResult{Class: types.ClassBenign, Confidence: 0.95}
-					ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-					auditResult, err := aud.Evaluate(ctx, s.Text, "", nil, l1Result)
-					cancel()
-					if err == nil {
-						blocked = auditResult.Verdict == types.VerdictBlock
-					}
+			if cfg.UseL2 {
+				l1Result := &types.ClassificationResult{Class: types.ClassBenign, Confidence: 0.95}
+				ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+				auditResult, err := aud.Evaluate(ctx, s.Text, "", nil, l1Result)
+				cancel()
+				if err == nil {
+					l2Blocked = auditResult.Verdict == types.VerdictBlock || auditResult.Verdict == types.VerdictHold
+				} else {
+					l2Blocked = true // fail closed
 				}
 			}
 
-			// L3 on benign output doesn't change blocking (sanitizer scans output, not input)
+			// L3 scans output, not input — doesn't affect input blocking
 			_ = san
 			_ = cfg.UseL3
 
+			blocked := l1Blocked || l2Blocked
 			lr.BenignTotal++
 			if blocked {
 				lr.BenignBlocked++

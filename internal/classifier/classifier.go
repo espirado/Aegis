@@ -13,43 +13,75 @@ package classifier
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"math"
 	"time"
 
-	"github.com/YOUR_ORG/aegis/pkg/types"
+	ort "github.com/yalue/onnxruntime_go"
+
+	"github.com/espirado/aegis/pkg/types"
 )
 
-// Classifier performs Layer 1 input classification.
+const numClasses = 5
+
+// Classifier performs Layer 1 input classification via ONNX Runtime.
 type Classifier struct {
-	// TODO: ONNX runtime session
-	// TODO: Tokenizer
-	modelPath string
+	session   *ort.DynamicAdvancedSession
+	tokenizer *WordPieceTokenizer
 	maxLen    int
 }
 
 // Config for the classifier.
 type Config struct {
-	ModelPath     string `yaml:"model_path"`
-	MaxInputLen   int    `yaml:"max_input_len"`    // Truncate inputs beyond this
-	InferenceTimeout time.Duration `yaml:"inference_timeout"` // Hard limit on inference time
+	ModelPath        string        `yaml:"model_path"`
+	VocabPath        string        `yaml:"vocab_path"`
+	MaxInputLen      int           `yaml:"max_input_len"`
+	InferenceTimeout time.Duration `yaml:"inference_timeout"`
 }
 
-// New creates a Classifier, loading the ONNX model from disk.
+// New creates a Classifier, loading the ONNX model and tokenizer.
 func New(cfg Config) (*Classifier, error) {
 	if cfg.ModelPath == "" {
 		return nil, fmt.Errorf("classifier: model_path is required")
 	}
+	if cfg.VocabPath == "" {
+		return nil, fmt.Errorf("classifier: vocab_path is required")
+	}
 	if cfg.MaxInputLen == 0 {
-		cfg.MaxInputLen = 512
+		cfg.MaxInputLen = 128
 	}
 
-	// TODO: Load ONNX model via onnxruntime-go
-	// TODO: Validate model input/output shapes
-	// TODO: Warm up with a test inference
+	tokenizer, err := NewWordPieceTokenizer(cfg.VocabPath, cfg.MaxInputLen)
+	if err != nil {
+		return nil, fmt.Errorf("classifier: load tokenizer: %w", err)
+	}
+	slog.Info("classifier tokenizer loaded", "vocab_size", tokenizer.VocabSize(), "max_len", cfg.MaxInputLen)
 
-	return &Classifier{
-		modelPath: cfg.ModelPath,
+	inputNames := []string{"input_ids", "attention_mask"}
+	outputNames := []string{"logits"}
+	session, err := ort.NewDynamicAdvancedSession(
+		cfg.ModelPath,
+		inputNames,
+		outputNames,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("classifier: load ONNX model: %w", err)
+	}
+	slog.Info("classifier ONNX model loaded", "model_path", cfg.ModelPath)
+
+	c := &Classifier{
+		session:   session,
+		tokenizer: tokenizer,
 		maxLen:    cfg.MaxInputLen,
-	}, nil
+	}
+
+	// Warm-up inference
+	if _, err := c.Classify(context.Background(), "test"); err != nil {
+		slog.Warn("classifier warm-up failed", "error", err)
+	}
+
+	return c, nil
 }
 
 // Classify runs the input through the ONNX model and returns the
@@ -57,26 +89,81 @@ func New(cfg Config) (*Classifier, error) {
 func (c *Classifier) Classify(ctx context.Context, input string) (*types.ClassificationResult, error) {
 	start := time.Now()
 
-	// TODO: Tokenize input
-	// TODO: Truncate/pad to maxLen
-	// TODO: Run ONNX inference
-	// TODO: Softmax over logits → class + confidence
+	inputIDs, attentionMask := c.tokenizer.Encode(input)
 
-	_ = ctx    // Will be used for cancellation
-	_ = input  // Will be tokenized
+	shape := ort.Shape{1, int64(c.maxLen)}
+	inputIDsTensor, err := ort.NewTensor(shape, inputIDs)
+	if err != nil {
+		return nil, fmt.Errorf("classifier: create input_ids tensor: %w", err)
+	}
+	defer inputIDsTensor.Destroy()
 
-	latency := time.Since(start).Milliseconds()
+	maskTensor, err := ort.NewTensor(shape, attentionMask)
+	if err != nil {
+		return nil, fmt.Errorf("classifier: create attention_mask tensor: %w", err)
+	}
+	defer maskTensor.Destroy()
 
-	// Placeholder — replace with real inference
+	outputTensor, err := ort.NewEmptyTensor[float32](ort.Shape{1, numClasses})
+	if err != nil {
+		return nil, fmt.Errorf("classifier: create output tensor: %w", err)
+	}
+	defer outputTensor.Destroy()
+
+	err = c.session.Run(
+		[]ort.ArbitraryTensor{inputIDsTensor, maskTensor},
+		[]ort.ArbitraryTensor{outputTensor},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("classifier: inference failed: %w", err)
+	}
+
+	logits := outputTensor.GetData()
+	probs := softmax(logits)
+
+	bestClass := 0
+	bestProb := probs[0]
+	for i := 1; i < len(probs); i++ {
+		if probs[i] > bestProb {
+			bestProb = probs[i]
+			bestClass = i
+		}
+	}
+
 	return &types.ClassificationResult{
-		Class:      types.ClassBenign,
-		Confidence: 0.0,
-		LatencyMs:  latency,
-	}, fmt.Errorf("classifier: not implemented — load ONNX model")
+		Class:      types.InputClass(bestClass),
+		Confidence: float64(bestProb),
+		LatencyMs:  time.Since(start).Milliseconds(),
+	}, nil
 }
 
 // Close releases ONNX runtime resources.
 func (c *Classifier) Close() error {
-	// TODO: Release ONNX session
+	if c.session != nil {
+		c.session.Destroy()
+	}
 	return nil
+}
+
+func softmax(logits []float32) []float32 {
+	maxVal := logits[0]
+	for _, v := range logits[1:] {
+		if v > maxVal {
+			maxVal = v
+		}
+	}
+
+	var sum float64
+	probs := make([]float32, len(logits))
+	for i, v := range logits {
+		exp := math.Exp(float64(v - maxVal))
+		probs[i] = float32(exp)
+		sum += exp
+	}
+
+	for i := range probs {
+		probs[i] = float32(float64(probs[i]) / sum)
+	}
+
+	return probs
 }

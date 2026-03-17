@@ -1,9 +1,22 @@
-module github.com/YOUR_ORG/aegis
+module github.com/espirado/aegis
 
 go 1.22
 
-// Dependencies will be added as implementation progresses.
-// Core expected dependencies:
-//   - onnxruntime-go (ONNX inference)
-//   - prometheus/client_golang (metrics)
-//   - rs/zerolog (structured logging)
+require (
+	github.com/go-chi/chi/v5 v5.2.1
+	github.com/prometheus/client_golang v1.22.0
+	github.com/yalue/onnxruntime_go v1.13.0
+	gopkg.in/yaml.v3 v3.0.1
+)
+
+require (
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/kr/text v0.2.0 // indirect
+	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/prometheus/client_model v0.6.1 // indirect
+	github.com/prometheus/common v0.62.0 // indirect
+	github.com/prometheus/procfs v0.15.1 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	google.golang.org/protobuf v1.36.5 // indirect
+)

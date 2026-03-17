@@ -7,11 +7,11 @@ import "time"
 type InputClass int
 
 const (
-	ClassBenign           InputClass = 0
-	ClassDirectInjection  InputClass = 1
+	ClassBenign            InputClass = 0
+	ClassDirectInjection   InputClass = 1
 	ClassIndirectInjection InputClass = 2
-	ClassJailbreak        InputClass = 3
-	ClassPHIExtraction    InputClass = 4
+	ClassJailbreak         InputClass = 3
+	ClassPHIExtraction     InputClass = 4
 )
 
 func (c InputClass) String() string {
@@ -35,10 +35,10 @@ func (c InputClass) String() string {
 type Verdict string
 
 const (
-	VerdictPass    Verdict = "PASS"
-	VerdictHold    Verdict = "HOLD"
-	VerdictBlock   Verdict = "BLOCK"
-	VerdictError   Verdict = "ERROR"
+	VerdictPass  Verdict = "PASS"
+	VerdictHold  Verdict = "HOLD"
+	VerdictBlock Verdict = "BLOCK"
+	VerdictError Verdict = "ERROR"
 )
 
 // ClassificationResult from Layer 1.
@@ -59,24 +59,24 @@ type AuditResult struct {
 
 // SanitizationResult from Layer 3.
 type SanitizationResult struct {
-	PHIDetected        bool     `json:"phi_detected"`
-	ExfiltrationAttempt bool    `json:"exfiltration_attempt"`
-	EntitiesRedacted   int      `json:"entities_redacted"`
-	PHITypes           []string `json:"phi_types,omitempty"`
-	LatencyMs          int64    `json:"latency_ms"`
+	PHIDetected         bool     `json:"phi_detected"`
+	ExfiltrationAttempt bool     `json:"exfiltration_attempt"`
+	EntitiesRedacted    int      `json:"entities_redacted"`
+	PHITypes            []string `json:"phi_types,omitempty"`
+	LatencyMs           int64    `json:"latency_ms"`
 }
 
 // AuditRecord is the immutable record of every request processed by AEGIS.
 type AuditRecord struct {
-	RequestID    string               `json:"request_id"`
-	Timestamp    time.Time            `json:"timestamp"`
-	Layer1       *ClassificationResult `json:"layer1"`
-	Layer2       *AuditResult          `json:"layer2,omitempty"`
-	Layer3       *SanitizationResult   `json:"layer3,omitempty"`
-	Decision     Verdict              `json:"decision"`
-	TotalLatency int64                `json:"total_latency_ms"`
-	HumanReview  *HumanReviewRecord   `json:"human_review,omitempty"`
-	IsPHITouching bool                `json:"is_phi_touching"`
+	RequestID     string               `json:"request_id"`
+	Timestamp     time.Time            `json:"timestamp"`
+	Layer1        *ClassificationResult `json:"layer1"`
+	Layer2        *AuditResult          `json:"layer2,omitempty"`
+	Layer3        *SanitizationResult   `json:"layer3,omitempty"`
+	Decision      Verdict              `json:"decision"`
+	TotalLatency  int64                `json:"total_latency_ms"`
+	HumanReview   *HumanReviewRecord   `json:"human_review,omitempty"`
+	IsPHITouching bool                 `json:"is_phi_touching"`
 }
 
 // HumanReviewRecord captures the outcome of hold-and-notify escalation.
@@ -88,9 +88,9 @@ type HumanReviewRecord struct {
 
 // ConfidenceThresholds defines the gating thresholds.
 type ConfidenceThresholds struct {
-	AutoProceed    float64 `json:"auto_proceed"`    // >= this → pass
-	HoldAndNotify  float64 `json:"hold_and_notify"` // >= this but < auto → hold
-	PHIMultiplier  float64 `json:"phi_multiplier"`  // multiply thresholds for PHI ops
+	AutoProceed   float64 `json:"auto_proceed" yaml:"auto_proceed"`
+	HoldAndNotify float64 `json:"hold_and_notify" yaml:"hold_and_notify"`
+	PHIMultiplier float64 `json:"phi_multiplier" yaml:"phi_multiplier"`
 }
 
 // DefaultThresholds returns the standard confidence gates.

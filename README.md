@@ -46,16 +46,21 @@ See [docs/architecture/](docs/architecture/) for detailed design documents.
 
 ## Current Status
 
-**Phase 1 (Classifier Training) — Complete.** Layer 1 classifier is trained and exported to ONNX.
+**Phase 1 (Classifier Training) — Complete.**
+**Phase 2+3 (Three-Layer Proxy) — Complete.**
+**Phase 4 (Evaluation) — Complete.** All four primary metrics meet their targets.
 
-| Metric | Result | Target |
-|--------|--------|--------|
-| Overall accuracy | 99.49% | — |
-| Macro avg F1 | 98.89% | ≥ 90% |
-| Benign FPR | 0.44% | < 1% |
-| ECE (calibration) | 0.0049 | < 0.05 |
+| Metric | Result | Target | Status |
+|--------|--------|--------|--------|
+| ASR (attack success rate) | 0.25% [0.12%, 0.42%] | <= 10% | PASS |
+| Benign FPR | 0.30% [0.18%, 0.42%] | < 1% | PASS |
+| PHI leak rate | 0.00% (65 scenarios, 6 channels) | < 1% | PASS |
+| L1 latency p50 | 45.4ms | < 100ms | PASS |
+| ECE (calibration) | 0.0038 | < 0.05 | PASS |
+| L2 auditor accuracy | 100% (50 samples, Llama 3.1 8B) | — | PASS |
+| Overall accuracy | 99.49% [99.36%, 99.63%] | >= 95% | PASS |
 
-Trained on 21,643 samples from 7 data sources (Tensor Trust, HackAPrompt, deepset, MedQA, PubMedQA, plus synthetic indirect injection and PHI extraction). See [docs/analysis/classifier-v1-results.md](docs/analysis/classifier-v1-results.md) for the full training report.
+Results from 5-seed evaluation with bootstrap 95% CIs (1,000 resamples). See [docs/analysis/evaluation-results.md](docs/analysis/evaluation-results.md) for the full evaluation report and [docs/analysis/classifier-v1-results.md](docs/analysis/classifier-v1-results.md) for the training report.
 
 ## Repository Structure
 

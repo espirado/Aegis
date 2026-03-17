@@ -1,6 +1,7 @@
 .PHONY: help setup setup-hooks test test-go test-py lint lint-go lint-py \
        download-data download-mimic preprocess-data \
-       train-classifier evaluate \
+       train-classifier evaluate evaluate-l1 evaluate-phi evaluate-auditor \
+       evaluate-ablation bench-latency evaluate-all \
        run-dev build docker-build clean
 
 # ─────────────────────────────────────────────────────────
@@ -72,10 +73,33 @@ train-classifier: ## Train Layer 1 classifier
 		--val-path data/processed/val.jsonl \
 		--output-dir ml/models/
 
-evaluate: ## Run full evaluation suite
+evaluate: ## Run single-seed evaluation (quick)
 	.venv/bin/python ml/eval/evaluate.py \
 		--model-path ml/models/classifier_v1.onnx \
 		--test-path data/processed/test.jsonl
+
+evaluate-l1: ## Run L1 multi-seed evaluation with bootstrap CIs
+	.venv/bin/python ml/eval/evaluate.py \
+		--model-path ml/models/classifier_v1.onnx \
+		--test-path data/processed/test.jsonl \
+		--seeds 42,123,456,789,1337 \
+		--bootstrap-n 1000 \
+		--tokenizer-name distilbert-base-uncased
+
+evaluate-phi: ## Run L3 PHI leak rate evaluation
+	go test ./ml/eval/ -run "TestPHILeakRate|TestPHIRedaction|TestAblationL3PHIOutput" -v -count=1
+
+evaluate-auditor: ## Run L2 auditor evaluation (requires Ollama)
+	go test ./ml/eval/ -run TestAuditorEvalOllama -v -count=1 -timeout 30m
+
+evaluate-ablation: ## Run ablation study (requires Ollama)
+	go test ./ml/eval/ -run TestAblationStudy -v -count=1 -timeout 30m
+
+bench-latency: ## Run L3 latency benchmark
+	go test ./ml/eval/ -run TestLatencyBenchmark -v -count=1
+	go test ./ml/eval/ -run "^$$" -bench "BenchmarkSanitizer" -benchmem -count=3
+
+evaluate-all: evaluate-l1 evaluate-phi evaluate-auditor evaluate-ablation bench-latency ## Run all evaluations
 
 # ─────────────────────────────────────────────────────────
 # Build & Run

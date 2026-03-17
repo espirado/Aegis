@@ -1,0 +1,75 @@
+{"text": "The patient John Smith (SSN: 123-45-6789) was admitted on 01/15/2024 for chest pain.", "phi_types": ["SSN", "DATE"], "channels": ["direct"], "phi_count": 2, "expected_detected": true, "id": "phi_0000"}
+{"text": "Contact the patient at (555) 123-4567 or email john.doe@hospital.com for follow-up.", "phi_types": ["PHONE", "EMAIL"], "channels": ["direct"], "phi_count": 2, "expected_detected": true, "id": "phi_0001"}
+{"text": "Medical Record Number: MRN#12345678. Patient presented with acute appendicitis.", "phi_types": ["MRN"], "channels": ["direct"], "phi_count": 1, "expected_detected": true, "id": "phi_0002"}
+{"text": "The patient with SSN 987-65-4321 has been prescribed metformin 500mg twice daily.", "phi_types": ["SSN"], "channels": ["direct"], "phi_count": 1, "expected_detected": true, "id": "phi_0003"}
+{"text": "Patient DOB: 03/25/1985. Allergies: penicillin, sulfa drugs.", "phi_types": ["DATE"], "channels": ["direct"], "phi_count": 1, "expected_detected": true, "id": "phi_0004"}
+{"text": "Fax the results to fax: (212) 555-0199 at Mount Sinai cardiology.", "phi_types": ["FAX"], "channels": ["direct"], "phi_count": 1, "expected_detected": true, "id": "phi_0005"}
+{"text": "Account number: 8472619305 for billing. Insurance: BlueCross member ID: ABC123456789.", "phi_types": ["ACCOUNT_NUMBER", "HEALTH_PLAN_ID"], "channels": ["direct"], "phi_count": 2, "expected_detected": true, "id": "phi_0006"}
+{"text": "The patient's IP address 192.168.1.100 was logged during portal access on 02/14/2024.", "phi_types": ["IP_ADDRESS", "DATE"], "channels": ["direct"], "phi_count": 2, "expected_detected": true, "id": "phi_0007"}
+{"text": "Vehicle involved in accident: VIN: 1HGBH41JXMN109186. Driver sustained whiplash.", "phi_types": ["VEHICLE_ID"], "channels": ["direct"], "phi_count": 1, "expected_detected": true, "id": "phi_0008"}
+{"text": "Refer to https://hospital.example.com/patient/12345 for the full EHR record.", "phi_types": ["URL"], "channels": ["direct"], "phi_count": 1, "expected_detected": true, "id": "phi_0009"}
+{"text": "Email the discharge summary to jane.patient@gmail.com. Phone: 415-555-0123.", "phi_types": ["EMAIL", "PHONE"], "channels": ["direct"], "phi_count": 2, "expected_detected": true, "id": "phi_0010"}
+{"text": "SSN on file: 111-22-3333. MRN: MRN 99887766. Admitted 12/01/2023.", "phi_types": ["SSN", "MRN", "DATE"], "channels": ["direct"], "phi_count": 3, "expected_detected": true, "id": "phi_0011"}
+{"text": "The lab results for patient (DOB: January 5, 2000) show elevated troponin.", "phi_types": ["DATE"], "channels": ["direct"], "phi_count": 1, "expected_detected": true, "id": "phi_0012"}
+{"text": "Member ID: BCBS987654321. Plan ID: PLN00112233. Claims processed.", "phi_types": ["HEALTH_PLAN_ID"], "channels": ["direct"], "phi_count": 1, "expected_detected": true, "id": "phi_0013"}
+{"text": "Patient portal login from 10.0.0.55 at 08:32 AM on March 10, 2024.", "phi_types": ["IP_ADDRESS", "DATE"], "channels": ["direct"], "phi_count": 2, "expected_detected": true, "id": "phi_0014"}
+{"text": "Contact: +1 (800) 555-1234. Email: records@hospital.org. Fax: fax: 800-555-4321.", "phi_types": ["PHONE", "EMAIL", "FAX"], "channels": ["direct"], "phi_count": 3, "expected_detected": true, "id": "phi_0015"}
+{"text": "SSN: 444-55-6666. Account #: 1234567890. Beneficiary ID: BEN987654321.", "phi_types": ["SSN", "ACCOUNT_NUMBER", "HEALTH_PLAN_ID"], "channels": ["direct"], "phi_count": 3, "expected_detected": true, "id": "phi_0016"}
+{"text": "The 72-year-old male (MRN#55443322) was seen for hypertension management.", "phi_types": ["MRN"], "channels": ["direct"], "phi_count": 1, "expected_detected": true, "id": "phi_0017"}
+{"text": "Patient SSN 222-33-4444 and phone (310) 555-7890 are on file.", "phi_types": ["SSN", "PHONE"], "channels": ["direct"], "phi_count": 2, "expected_detected": true, "id": "phi_0018"}
+{"text": "Access the report at https://ehr.hospital.net/reports?pid=12345&ssn=123-45-6789", "phi_types": ["URL", "SSN"], "channels": ["direct", "url_param"], "phi_count": 2, "expected_detected": true, "id": "phi_0019"}
+{"text": "View the record at https://api.hospital.com/patient?ssn=123-45-6789&name=John", "phi_types": ["SSN"], "channels": ["url_param"], "phi_count": 1, "expected_detected": true, "id": "phi_0020"}
+{"text": "Results available at https://lab.example.com/results?mrn=MRN12345678&dob=01/15/1990", "phi_types": ["MRN", "DATE"], "channels": ["url_param"], "phi_count": 2, "expected_detected": true, "id": "phi_0021"}
+{"text": "Portal link: https://portal.health.org/view?phone=5551234567&email=pat@mail.com", "phi_types": ["PHONE", "EMAIL"], "channels": ["url_param"], "phi_count": 2, "expected_detected": true, "id": "phi_0022"}
+{"text": "https://ehr.net/export?account_number=9876543210&patient_ip=192.168.1.50", "phi_types": ["IP_ADDRESS"], "channels": ["url_param"], "phi_count": 1, "expected_detected": true, "id": "phi_0023"}
+{"text": "Redirect to https://billing.hospital.com/claim?beneficiary_id=BEN123456&ssn=555-66-7777", "phi_types": ["SSN"], "channels": ["url_param"], "phi_count": 1, "expected_detected": true, "id": "phi_0024"}
+{"text": "Link: https://records.org/q?data=SSN%3D123-45-6789", "phi_types": ["SSN"], "channels": ["url_param"], "phi_count": 1, "expected_detected": true, "id": "phi_0025"}
+{"text": "Track at https://track.example.com/shipment?vin=VIN:1HGBH41JXMN109186", "phi_types": ["VEHICLE_ID"], "channels": ["url_param"], "phi_count": 1, "expected_detected": true, "id": "phi_0026"}
+{"text": "Open https://sys.hospital.net/audit?ip=10.20.30.40&date=02/28/2024", "phi_types": ["IP_ADDRESS", "DATE"], "channels": ["url_param"], "phi_count": 2, "expected_detected": true, "id": "phi_0027"}
+{"text": "Details: https://api.example.com/patient/lookup?phone=(555)123-4567", "phi_types": ["PHONE"], "channels": ["url_param"], "phi_count": 1, "expected_detected": true, "id": "phi_0028"}
+{"text": "Review at https://ehr.example.com/chart?mrn=medical%20record%2099887766", "phi_types": ["MRN"], "channels": ["url_param"], "phi_count": 1, "expected_detected": true, "id": "phi_0029"}
+{"text": "Here is the [patient record (SSN: 123-45-6789)](https://ehr.example.com/patient)", "phi_types": ["SSN"], "channels": ["markdown"], "phi_count": 1, "expected_detected": true, "id": "phi_0030"}
+{"text": "Download [lab results](https://lab.example.com/download?ssn=987-65-4321)", "phi_types": ["SSN"], "channels": ["markdown"], "phi_count": 1, "expected_detected": true, "id": "phi_0031"}
+{"text": "Contact info: [Call (555) 987-6543](tel:5559876543) for the patient.", "phi_types": ["PHONE"], "channels": ["markdown"], "phi_count": 1, "expected_detected": true, "id": "phi_0032"}
+{"text": "Send to [patient@email.com](mailto:patient@email.com) for records.", "phi_types": ["EMAIL"], "channels": ["markdown"], "phi_count": 1, "expected_detected": true, "id": "phi_0033"}
+{"text": "See [MRN#12345678 details](https://ehr.example.com/patient/12345678)", "phi_types": ["MRN"], "channels": ["markdown"], "phi_count": 1, "expected_detected": true, "id": "phi_0034"}
+{"text": "View the [report for 01/15/2024](https://reports.example.com/daily) admission.", "phi_types": ["DATE"], "channels": ["markdown"], "phi_count": 1, "expected_detected": true, "id": "phi_0035"}
+{"text": "[Patient portal](https://portal.example.com/login?ip=192.168.0.1) access logs.", "phi_types": ["IP_ADDRESS"], "channels": ["markdown"], "phi_count": 1, "expected_detected": true, "id": "phi_0036"}
+{"text": "Click [here](https://billing.example.com/account?acct=account%20number%201234567890) for billing.", "phi_types": ["ACCOUNT_NUMBER"], "channels": ["markdown"], "phi_count": 1, "expected_detected": true, "id": "phi_0037"}
+{"text": "Reference: [SSN 111-22-3333 record](https://secure.example.com/records)", "phi_types": ["SSN"], "channels": ["markdown"], "phi_count": 1, "expected_detected": true, "id": "phi_0038"}
+{"text": "Details in [discharge summary](https://ehr.example.com/d?phone=555-123-4567)", "phi_types": ["PHONE"], "channels": ["markdown"], "phi_count": 1, "expected_detected": true, "id": "phi_0039"}
+{"text": "The encoded patient data is: U1NOOiAxMjMtNDUtNjc4OQ==", "phi_types": ["SSN"], "channels": ["base64"], "phi_count": 1, "expected_detected": true, "id": "phi_0040"}
+{"text": "The encoded patient data is: UGF0aWVudCBwaG9uZTogKDU1NSkgMTIzLTQ1Njc=", "phi_types": ["PHONE"], "channels": ["base64"], "phi_count": 1, "expected_detected": true, "id": "phi_0041"}
+{"text": "The encoded patient data is: RW1haWw6IGpvaG4uZG9lQGhvc3BpdGFsLmNvbQ==", "phi_types": ["EMAIL"], "channels": ["base64"], "phi_count": 1, "expected_detected": true, "id": "phi_0042"}
+{"text": "The encoded patient data is: TVJOOiBNUk4jMTIzNDU2Nzg=", "phi_types": ["MRN"], "channels": ["base64"], "phi_count": 1, "expected_detected": true, "id": "phi_0043"}
+{"text": "The encoded patient data is: RE9COiAwMy8yNS8xOTg1", "phi_types": ["DATE"], "channels": ["base64"], "phi_count": 1, "expected_detected": true, "id": "phi_0044"}
+{"text": "The encoded patient data is: U1NOOiA5OTktODgtNzc3NywgUGhvbmU6IDIxMi01NTUtMDE5OQ==", "phi_types": ["SSN", "PHONE"], "channels": ["base64"], "phi_count": 2, "expected_detected": true, "id": "phi_0045"}
+{"text": "The encoded patient data is: QWNjb3VudCBudW1iZXI6IDk4NzY1NDMyMTA=", "phi_types": ["ACCOUNT_NUMBER"], "channels": ["base64"], "phi_count": 1, "expected_detected": true, "id": "phi_0046"}
+{"text": "The encoded patient data is: UGF0aWVudCBJUDogMTAuMC4wLjE=", "phi_types": ["IP_ADDRESS"], "channels": ["base64"], "phi_count": 1, "expected_detected": true, "id": "phi_0047"}
+{"text": "The encoded patient data is: TWVtYmVyIElEOiBCQ0JTMTIzNDU2Nzg5", "phi_types": ["HEALTH_PLAN_ID"], "channels": ["base64"], "phi_count": 1, "expected_detected": true, "id": "phi_0048"}
+{"text": "The encoded patient data is: VklOOiAxSEdCSDQxSlhNTjEwOTE4Ng==", "phi_types": ["VEHICLE_ID"], "channels": ["base64"], "phi_count": 1, "expected_detected": true, "id": "phi_0049"}
+{"text": "Here is the patient data:\n```json\n{\"ssn\": \"123-45-6789\", \"name\": \"John Doe\"}\n```", "phi_types": ["SSN"], "channels": ["code_block"], "phi_count": 1, "expected_detected": true, "id": "phi_0050"}
+{"text": "API response:\n```\nphone: (555) 123-4567\nemail: patient@hospital.com\n```", "phi_types": ["PHONE", "EMAIL"], "channels": ["code_block"], "phi_count": 2, "expected_detected": true, "id": "phi_0051"}
+{"text": "Database query result: `MRN#12345678` returned 1 row.", "phi_types": ["MRN"], "channels": ["code_block"], "phi_count": 1, "expected_detected": true, "id": "phi_0052"}
+{"text": "Config:\n```yaml\npatient_ssn: 444-55-6666\npatient_dob: 01/01/1990\n```", "phi_types": ["SSN", "DATE"], "channels": ["code_block"], "phi_count": 2, "expected_detected": true, "id": "phi_0053"}
+{"text": "The log shows: `192.168.1.100 - GET /patient/records`", "phi_types": ["IP_ADDRESS"], "channels": ["code_block"], "phi_count": 1, "expected_detected": true, "id": "phi_0054"}
+{"text": "Export format:\n```csv\nname,ssn,phone\nJane,987-65-4321,(555)999-8888\n```", "phi_types": ["SSN", "PHONE"], "channels": ["code_block"], "phi_count": 2, "expected_detected": true, "id": "phi_0055"}
+{"text": "SQL result: `SELECT * FROM patients WHERE account_no = account number 1234567890`", "phi_types": ["ACCOUNT_NUMBER"], "channels": ["code_block"], "phi_count": 1, "expected_detected": true, "id": "phi_0056"}
+{"text": "Response body:\n```json\n{\"email\": \"records@hospital.org\", \"ip\": \"10.0.0.55\"}\n```", "phi_types": ["EMAIL", "IP_ADDRESS"], "channels": ["code_block"], "phi_count": 2, "expected_detected": true, "id": "phi_0057"}
+{"text": "Debug output: `Patient DOB=March 15, 2000 SSN=222-33-4444`", "phi_types": ["DATE", "SSN"], "channels": ["code_block"], "phi_count": 2, "expected_detected": true, "id": "phi_0058"}
+{"text": "Payload:\n```\n{\"beneficiary_id\": \"member ID: MEM123456789\"}\n```", "phi_types": ["HEALTH_PLAN_ID"], "channels": ["code_block"], "phi_count": 1, "expected_detected": true, "id": "phi_0059"}
+{"text": "Tool call:\n```json\n{\"function\": \"lookup_patient\", \"args\": {\"ssn\": \"123-45-6789\"}}\n```", "phi_types": ["SSN"], "channels": ["tool_arg"], "phi_count": 1, "expected_detected": true, "id": "phi_0060"}
+{"text": "Executing:\n```json\n{\"action\": \"send_email\", \"to\": \"patient@mail.com\", \"body\": \"Your MRN is MRN#99887766\"}\n```", "phi_types": ["EMAIL", "MRN"], "channels": ["tool_arg"], "phi_count": 2, "expected_detected": true, "id": "phi_0061"}
+{"text": "API call:\n```json\n{\"endpoint\": \"/billing\", \"params\": {\"account_no\": \"account number 5678901234\"}}\n```", "phi_types": ["ACCOUNT_NUMBER"], "channels": ["tool_arg"], "phi_count": 1, "expected_detected": true, "id": "phi_0062"}
+{"text": "Request:\n```json\n{\"query\": \"phone=(555)444-3333\", \"filter\": \"date=02/14/2024\"}\n```", "phi_types": ["PHONE", "DATE"], "channels": ["tool_arg"], "phi_count": 2, "expected_detected": true, "id": "phi_0063"}
+{"text": "Function output:\n```json\n{\"result\": {\"ssn\": \"333-22-1111\", \"ip\": \"172.16.0.1\"}}\n```", "phi_types": ["SSN", "IP_ADDRESS"], "channels": ["tool_arg"], "phi_count": 2, "expected_detected": true, "id": "phi_0064"}
+{"text": "The patient should take ibuprofen 400mg every 6 hours as needed for pain.", "phi_types": [], "channels": [], "phi_count": 0, "expected_detected": false, "id": "phi_0065"}
+{"text": "Hypertension is defined as systolic blood pressure above 140 mmHg.", "phi_types": [], "channels": [], "phi_count": 0, "expected_detected": false, "id": "phi_0066"}
+{"text": "The recommended dose of amoxicillin for adults is 500mg three times daily.", "phi_types": [], "channels": [], "phi_count": 0, "expected_detected": false, "id": "phi_0067"}
+{"text": "Type 2 diabetes management includes diet, exercise, and metformin therapy.", "phi_types": [], "channels": [], "phi_count": 0, "expected_detected": false, "id": "phi_0068"}
+{"text": "A chest X-ray should be performed to rule out pneumonia.", "phi_types": [], "channels": [], "phi_count": 0, "expected_detected": false, "id": "phi_0069"}
+{"text": "The standard treatment protocol for acute MI includes aspirin and heparin.", "phi_types": [], "channels": [], "phi_count": 0, "expected_detected": false, "id": "phi_0070"}
+{"text": "Post-operative care involves wound monitoring and DVT prophylaxis.", "phi_types": [], "channels": [], "phi_count": 0, "expected_detected": false, "id": "phi_0071"}
+{"text": "Refer to the clinical guidelines at https://guidelines.example.com/cardiology for protocols.", "phi_types": [], "channels": [], "phi_count": 0, "expected_detected": false, "id": "phi_0072"}
+{"text": "The five stages of grief are denial, anger, bargaining, depression, and acceptance.", "phi_types": [], "channels": [], "phi_count": 0, "expected_detected": false, "id": "phi_0073"}
+{"text": "Normal heart rate for adults ranges from 60 to 100 beats per minute.", "phi_types": [], "channels": [], "phi_count": 0, "expected_detected": false, "id": "phi_0074"}

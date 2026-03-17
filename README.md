@@ -44,6 +44,19 @@ Static keyword filters and single-agent wrappers were never designed for agentic
 
 See [docs/architecture/](docs/architecture/) for detailed design documents.
 
+## Current Status
+
+**Phase 1 (Classifier Training) — Complete.** Layer 1 classifier is trained and exported to ONNX.
+
+| Metric | Result | Target |
+|--------|--------|--------|
+| Overall accuracy | 99.49% | — |
+| Macro avg F1 | 98.89% | ≥ 90% |
+| Benign FPR | 0.44% | < 1% |
+| ECE (calibration) | 0.0049 | < 0.05 |
+
+Trained on 21,643 samples from 7 data sources (Tensor Trust, HackAPrompt, deepset, MedQA, PubMedQA, plus synthetic indirect injection and PHI extraction). See [docs/analysis/classifier-v1-results.md](docs/analysis/classifier-v1-results.md) for the full training report.
+
 ## Repository Structure
 
 ```
@@ -103,7 +116,7 @@ aegis/
 
 ```bash
 # Clone
-git clone https://github.com/YOUR_ORG/aegis.git
+git clone https://github.com/espirado/Aegis.git
 cd aegis
 
 # Setup environment

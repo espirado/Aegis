@@ -61,7 +61,7 @@ download-mimic: ## Download MIMIC-III (requires credentials)
 	./scripts/data/download_mimic.sh
 
 preprocess-data: ## Preprocess datasets into unified format
-	.venv/bin/python scripts/data/preprocess.py
+	.venv/bin/python scripts/data/preprocess.py --data-dir data/raw --output-dir data/processed
 
 # ─────────────────────────────────────────────────────────
 # ML Training & Evaluation

@@ -131,6 +131,67 @@ func TestContainsPHI(t *testing.T) {
 	}
 }
 
+func TestScanInputText_RedactsPatientIdentifiers(t *testing.T) {
+	san, _ := New(Config{RedactMode: "redact"})
+	text := "Patient: Maria Rodriguez, DOB: 03/15/1978, MRN: MRN-4421983, SSN: 456-78-9012"
+	entities := san.ScanInputText(text)
+	if len(entities) == 0 {
+		t.Fatal("expected input entities to be detected")
+	}
+
+	typeSet := make(map[string]bool)
+	for _, e := range entities {
+		typeSet[e.Type] = true
+	}
+	for _, want := range []string{"SSN", "MRN", "DATE", "NAME"} {
+		if !typeSet[want] {
+			t.Errorf("expected %s in detected entities, got %v", want, typeSet)
+		}
+	}
+}
+
+func TestScanInputText_PreservesOperationalData(t *testing.T) {
+	san, _ := New(Config{RedactMode: "redact"})
+	text := "Date of Service: 02/28/2026, CPT 27447, Denial Date: 03/10/2026, NPI: 1234567890"
+	entities := san.ScanInputText(text)
+	if len(entities) != 0 {
+		types := make([]string, len(entities))
+		for i, e := range entities {
+			types[i] = e.Type
+		}
+		t.Errorf("expected no input entities for operational data, but got %v", types)
+	}
+}
+
+func TestScanInputText_RedactProducesCleanPrompt(t *testing.T) {
+	san, _ := New(Config{RedactMode: "redact"})
+	text := "Evaluate claim for Patient: Jane Doe, SSN: 111-22-3333, DOB: 01/15/1990, CPT 99213, Date of Service: 03/01/2026"
+
+	entities := san.ScanInputText(text)
+	redacted := san.Redact(text, entities)
+
+	if containsSubstring(redacted, "111-22-3333") {
+		t.Error("SSN should be redacted from input")
+	}
+	if containsSubstring(redacted, "01/15/1990") {
+		t.Error("DOB should be redacted from input")
+	}
+	if !containsSubstring(redacted, "03/01/2026") {
+		t.Error("Date of Service should be PRESERVED in input")
+	}
+	if !containsSubstring(redacted, "CPT 99213") {
+		t.Error("CPT code should be PRESERVED in input")
+	}
+}
+
+func TestScanDirect_MRN_DashFormat(t *testing.T) {
+	san, _ := New(Config{RedactMode: "block"})
+	result, _ := san.Scan(context.Background(), "MRN-4421983")
+	if !result.PHIDetected {
+		t.Error("expected PHI to be detected for dash-separated MRN")
+	}
+}
+
 func containsSubstring(s, sub string) bool {
 	return len(s) >= len(sub) && (s == sub || len(s) > 0 && containsAt(s, sub))
 }

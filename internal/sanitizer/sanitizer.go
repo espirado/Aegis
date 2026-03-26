@@ -19,8 +19,9 @@ import (
 
 // Sanitizer performs Layer 3 output inspection.
 type Sanitizer struct {
-	patterns   []phi.Pattern
-	redactMode string
+	patterns      []phi.Pattern
+	inputPatterns []phi.Pattern
+	redactMode    string
 }
 
 // Config for the sanitizer.
@@ -44,8 +45,9 @@ func New(cfg Config) (*Sanitizer, error) {
 	)
 
 	return &Sanitizer{
-		patterns:   patterns,
-		redactMode: mode,
+		patterns:      patterns,
+		inputPatterns: phi.InputPatterns(),
+		redactMode:    mode,
 	}, nil
 }
 
@@ -207,6 +209,25 @@ func (s *Sanitizer) ScanText(text string) []DetectedEntity {
 	var entities []DetectedEntity
 	entities = append(entities, s.scanDirect(text)...)
 	entities = append(entities, scanExfiltration(text, s.patterns)...)
+	return deduplicateEntities(entities)
+}
+
+// ScanInputText detects patient identifiers using the targeted input
+// patterns. Operational data (service dates, NPIs, codes) is preserved.
+func (s *Sanitizer) ScanInputText(text string) []DetectedEntity {
+	var entities []DetectedEntity
+	for _, p := range s.inputPatterns {
+		locs := p.Regex.FindAllStringIndex(text, -1)
+		for _, loc := range locs {
+			entities = append(entities, DetectedEntity{
+				Type:       string(p.Type),
+				StartChar:  loc[0],
+				EndChar:    loc[1],
+				Confidence: 1.0,
+				Channel:    "direct",
+			})
+		}
+	}
 	return deduplicateEntities(entities)
 }
 

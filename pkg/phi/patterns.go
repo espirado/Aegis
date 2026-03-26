@@ -70,7 +70,7 @@ func Patterns() []Pattern {
 		},
 		{
 			Type:    MedicalRecordNumber,
-			Regex:   regexp.MustCompile(`(?i)\b(?:mrn|medical\s*record)[:\s#]*\d{4,12}\b`),
+			Regex:   regexp.MustCompile(`(?i)\b(?:mrn|medical\s*record)[:\s#\-]*\d{4,12}\b`),
 			Comment: "Medical Record Number (prefixed with MRN or medical record)",
 		},
 		{
@@ -107,6 +107,59 @@ func Patterns() []Pattern {
 			Type:    WebURL,
 			Regex:   regexp.MustCompile(`https?://[^\s<>"{}|\\^` + "`" + `\[\]]+`),
 			Comment: "Web URL (http or https)",
+		},
+	}
+}
+
+// InputPatterns returns patterns for input sanitization — targeted at
+// patient identifiers only. Operational data (dates of service, provider
+// NPIs, procedure codes) is preserved so the agent can do its job.
+func InputPatterns() []Pattern {
+	return []Pattern{
+		{
+			Type:    SSN,
+			Regex:   regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`),
+			Comment: "Social Security Number (XXX-XX-XXXX)",
+		},
+		{
+			Type:    SSN,
+			Regex:   regexp.MustCompile(`\b\d{9}\b`),
+			Comment: "SSN without dashes (9 consecutive digits)",
+		},
+		{
+			Type:    MedicalRecordNumber,
+			Regex:   regexp.MustCompile(`(?i)\b(?:mrn|medical\s*record)[:\s#\-]*\d{4,12}\b`),
+			Comment: "Medical Record Number",
+		},
+		{
+			Type:    HealthPlanBenefID,
+			Regex:   regexp.MustCompile(`(?i)\b(?:member|beneficiary|plan)\s*(?:id|#|number)[:\s]*[A-Z0-9]{6,15}\b`),
+			Comment: "Health plan beneficiary ID",
+		},
+		{
+			Type:    EmailAddress,
+			Regex:   regexp.MustCompile(`\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Z|a-z]{2,}\b`),
+			Comment: "Email address",
+		},
+		{
+			Type:    Date,
+			Regex:   regexp.MustCompile(`(?i)(?:dob|date\s*of\s*birth|born|birthday)[:\s]*(?:0[1-9]|1[0-2])[/\-](?:0[1-9]|[12]\d|3[01])[/\-](?:19|20)\d{2}`),
+			Comment: "Date of birth only (context-anchored, not all dates)",
+		},
+		{
+			Type:    Date,
+			Regex:   regexp.MustCompile(`(?i)(?:dob|date\s*of\s*birth|born|birthday)[:\s]*(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}`),
+			Comment: "Date of birth in Month DD, YYYY format (context-anchored)",
+		},
+		{
+			Type:    Name,
+			Regex:   regexp.MustCompile(`(?i)(?:patient|patient\s*name|member\s*name|insured|subscriber)[:\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})`),
+			Comment: "Patient name following structured field labels (e.g. 'Patient: Jane Doe')",
+		},
+		{
+			Type:    PhoneNumber,
+			Regex:   regexp.MustCompile(`(?i)(?:phone|cell|mobile|tel|contact)[:\s]*(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}`),
+			Comment: "Phone number (context-anchored, won't match NPIs)",
 		},
 	}
 }

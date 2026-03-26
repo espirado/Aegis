@@ -86,6 +86,7 @@ type ProxyResponse struct {
 type LayerDetails struct {
 	L1             *L1Detail                 `json:"l1"`
 	L2             *types.AuditResult        `json:"l2,omitempty"`
+	InputSanitized *types.SanitizationResult `json:"input_sanitized,omitempty"`
 	L3             *types.SanitizationResult `json:"l3,omitempty"`
 	TotalLatencyMs int64                     `json:"total_latency_ms"`
 	IsPHITouching  bool                      `json:"is_phi_touching"`
@@ -235,9 +236,34 @@ func (p *Proxy) handleRequest(ctx context.Context, requestID string, req *ProxyR
 	}
 }
 
-// forwardAndSanitize sends the prompt to the agent and scans the response.
+// forwardAndSanitize redacts PHI from the input, sends the cleaned prompt
+// to the agent, then scans the response for any PHI leakage.
 func (p *Proxy) forwardAndSanitize(ctx context.Context, requestID, prompt string, record *types.AuditRecord) (*ProxyResponse, error) {
-	agentResponse, err := p.forwardToAgent(ctx, prompt)
+	cleanedPrompt := prompt
+	if inputEntities := p.sanitizer.ScanInputText(prompt); len(inputEntities) > 0 {
+		cleanedPrompt = p.sanitizer.Redact(prompt, inputEntities)
+
+		phiTypes := make(map[string]bool)
+		for _, e := range inputEntities {
+			phiTypes[e.Type] = true
+		}
+		var pts []string
+		for t := range phiTypes {
+			pts = append(pts, t)
+		}
+		record.InputSanitized = &types.SanitizationResult{
+			PHIDetected:      true,
+			EntitiesRedacted: len(inputEntities),
+			PHITypes:         pts,
+		}
+		slog.Info("input_phi_redacted",
+			"request_id", requestID,
+			"entities_redacted", len(inputEntities),
+			"phi_types", pts,
+		)
+	}
+
+	agentResponse, err := p.forwardToAgent(ctx, cleanedPrompt)
 	if err != nil {
 		record.Decision = types.VerdictError
 		return nil, fmt.Errorf("forward to agent: %w", err)
@@ -317,6 +343,14 @@ func (p *Proxy) decide(result *types.AuditResult, isPHITouching bool) types.Verd
 		holdThreshold = clamp(holdThreshold*p.thresholds.PHIMultiplier, 0, 1)
 	}
 
+	// When L2 explicitly returns PASS with no policy violations, honor the
+	// verdict. LLM providers (especially Ollama) often emit unreliable
+	// confidence values (e.g. 0.0) even when the model is confident in its
+	// assessment. Ignoring a clear PASS would defeat the purpose of L2.
+	if result.Verdict == types.VerdictPass && len(result.PolicyViolations) == 0 {
+		return types.VerdictPass
+	}
+
 	if result.Verdict == types.VerdictPass && result.Confidence >= autoThreshold {
 		return types.VerdictPass
 	}
@@ -342,6 +376,7 @@ func (p *Proxy) buildLayerDetails(record *types.AuditRecord) *LayerDetails {
 		TotalLatencyMs: record.TotalLatency,
 		IsPHITouching:  record.IsPHITouching,
 		L2:             record.Layer2,
+		InputSanitized: record.InputSanitized,
 		L3:             record.Layer3,
 	}
 

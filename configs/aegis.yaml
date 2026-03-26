@@ -32,7 +32,7 @@ auditor:
 
 sanitizer:
   ner_model_path: "ml/models/phi_ner_v1.onnx"
-  redact_mode: "block"  # "redact" or "block"
+  redact_mode: "redact"  # "redact" masks PHI in output; "block" rejects entire response
 
 notify:
   webhook_url: ""  # Set via AEGIS_NOTIFY_WEBHOOK env var

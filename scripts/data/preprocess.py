@@ -387,6 +387,107 @@ def generate_phi_extraction_samples(seed: int = 42) -> list[dict]:
     return records
 
 
+def generate_benign_billing_admin_samples(seed: int = 42) -> list[dict]:
+    """Generate synthetic benign billing, coding, and administrative queries.
+
+    These fill a gap: billing/insurance vocabulary was only represented in
+    attack classes, causing the classifier to flag legitimate operational
+    questions as threats.
+    """
+    rng = random.Random(seed)
+
+    templates = [
+        # Billing & coding
+        "What is the CPT code for {procedure}?",
+        "What are the billing prices for {procedure}?",
+        "How much does {procedure} cost at our facility?",
+        "What is the reimbursement rate for CPT code {code}?",
+        "What ICD-10 code should I use for {condition}?",
+        "Get me the total value of all claims billed with code {code}.",
+        "What is the average reimbursement for {procedure}?",
+        "How many claims were submitted with diagnosis code {code} this quarter?",
+        "What is the allowed amount for {procedure} under Medicare?",
+        "Show me the fee schedule for {specialty} services.",
+        "What modifier should I use when billing for {procedure}?",
+        "What is the RVU value for CPT {code}?",
+        "How do I bill for a {visit_type} visit?",
+        "What are the documentation requirements for billing code {code}?",
+        "Is {procedure} covered under the standard formulary?",
+        # Claims & revenue cycle
+        "What is the denial rate for claims with code {code}?",
+        "How many claims are pending in the adjudication queue?",
+        "What are the top denial reasons this month?",
+        "What is the average days in accounts receivable?",
+        "Show the clean claim rate for the last quarter.",
+        "What is our collection rate for {specialty} services?",
+        "How do I appeal a denied claim for {procedure}?",
+        "What are the prior authorization requirements for {procedure}?",
+        "What payer contracts are up for renewal this year?",
+        "What is the turnaround time for claim processing?",
+        # Administrative & operational
+        "What is the scheduling policy for {procedure}?",
+        "How many {visit_type} appointments are available next week?",
+        "What are the credentialing requirements for new providers?",
+        "What is the policy for patient no-shows?",
+        "How do I update the charge master for {procedure}?",
+        "What compliance training is due this quarter?",
+        "What are the HIPAA training requirements for new staff?",
+        "Show me the quality metrics dashboard for {specialty}.",
+        "What is the patient satisfaction score for {specialty}?",
+        "What are the discharge planning protocols?",
+        "When is the next utilization review meeting?",
+        "What is our average length of stay for {condition}?",
+        "How do I submit a referral to {specialty}?",
+        "What are the operating room scheduling rules?",
+        "What is our bed occupancy rate this week?",
+    ]
+
+    procedures = [
+        "an X-ray", "an MRI", "a CT scan", "a colonoscopy", "physical therapy",
+        "a knee replacement", "cardiac catheterization", "an echocardiogram",
+        "a mammogram", "an ultrasound", "lab work", "blood panel",
+        "a stress test", "an EKG", "a biopsy", "chemotherapy infusion",
+        "dialysis", "a flu vaccine", "wound care", "a sleep study",
+    ]
+    conditions = [
+        "type 2 diabetes", "hypertension", "congestive heart failure",
+        "pneumonia", "COPD exacerbation", "acute myocardial infarction",
+        "urinary tract infection", "sepsis", "hip fracture", "asthma",
+    ]
+    codes = [
+        "99213", "99214", "99215", "99283", "99284", "99285",
+        "45", "71046", "73721", "43239", "27447", "93452",
+        "G0438", "G0439", "E11.9", "I10", "J18.9", "N39.0",
+    ]
+    specialties = [
+        "cardiology", "orthopedics", "radiology", "oncology",
+        "primary care", "emergency medicine", "neurology", "pediatrics",
+    ]
+    visit_types = [
+        "new patient", "follow-up", "telehealth", "urgent care",
+        "annual wellness", "pre-operative", "post-operative",
+    ]
+
+    records = []
+    for _ in range(500):
+        tmpl = rng.choice(templates)
+        text = tmpl.format(
+            procedure=rng.choice(procedures),
+            condition=rng.choice(conditions),
+            code=rng.choice(codes),
+            specialty=rng.choice(specialties),
+            visit_type=rng.choice(visit_types),
+        )
+        records.append({
+            "text": text,
+            "label": LABELS["benign"],
+            "source": "synthetic_benign_billing",
+        })
+
+    logger.info(f"Synthetic benign billing/admin: {len(records)} samples generated")
+    return records
+
+
 def create_splits(
     records: list[dict],
     train_ratio: float = 0.8,
@@ -453,6 +554,7 @@ def main() -> None:
     all_records.extend(process_hackaprompt(args.data_dir, seed=args.seed))
     all_records.extend(generate_indirect_injection_samples(args.seed))
     all_records.extend(generate_phi_extraction_samples(args.seed))
+    all_records.extend(generate_benign_billing_admin_samples(args.seed))
 
     logger.info(f"Total records: {len(all_records)}")
 

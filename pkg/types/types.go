@@ -68,15 +68,16 @@ type SanitizationResult struct {
 
 // AuditRecord is the immutable record of every request processed by AEGIS.
 type AuditRecord struct {
-	RequestID     string               `json:"request_id"`
-	Timestamp     time.Time            `json:"timestamp"`
-	Layer1        *ClassificationResult `json:"layer1"`
-	Layer2        *AuditResult          `json:"layer2,omitempty"`
-	Layer3        *SanitizationResult   `json:"layer3,omitempty"`
-	Decision      Verdict              `json:"decision"`
-	TotalLatency  int64                `json:"total_latency_ms"`
-	HumanReview   *HumanReviewRecord   `json:"human_review,omitempty"`
-	IsPHITouching bool                 `json:"is_phi_touching"`
+	RequestID        string               `json:"request_id"`
+	Timestamp        time.Time            `json:"timestamp"`
+	Layer1           *ClassificationResult `json:"layer1"`
+	Layer2           *AuditResult          `json:"layer2,omitempty"`
+	Layer3           *SanitizationResult   `json:"layer3,omitempty"`
+	InputSanitized   *SanitizationResult   `json:"input_sanitized,omitempty"`
+	Decision         Verdict              `json:"decision"`
+	TotalLatency     int64                `json:"total_latency_ms"`
+	HumanReview      *HumanReviewRecord   `json:"human_review,omitempty"`
+	IsPHITouching    bool                 `json:"is_phi_touching"`
 }
 
 // HumanReviewRecord captures the outcome of hold-and-notify escalation.

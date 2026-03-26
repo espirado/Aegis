@@ -259,6 +259,7 @@ Apache License 2.0 — See [LICENSE](LICENSE) for details.
   title={AEGIS: Adversarial Enforcement and Guardrail Interception System for Healthcare AI Agents},
   author={Espira, Andrew},
   year={2026},
-  institution={Saint Peter's University}
+  institution={Saint Peter's University},
+  email={ubasol@saintpeters.edu}
 }
 ```

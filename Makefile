@@ -2,7 +2,7 @@
        download-data download-mimic preprocess-data \
        train-classifier evaluate evaluate-l1 evaluate-phi evaluate-auditor \
        evaluate-ablation bench-latency evaluate-all \
-       run-dev run-proxy run-mock-agent test-live build docker-build clean
+       run-dev run-proxy run-mock-agent test-live build docker-build clean demo
 
 # ─────────────────────────────────────────────────────────
 # Help
@@ -120,6 +120,10 @@ run-mock-agent: ## Run mock healthcare agent on :9000 (needs Ollama)
 test-live: ## Run live smoke tests against running proxy
 	@chmod +x scripts/test_live.sh
 	@./scripts/test_live.sh
+
+demo: ## Open AEGIS demo in browser (proxy must be running)
+	@echo "Opening http://localhost:8080/ ..."
+	@open http://localhost:8080/ 2>/dev/null || xdg-open http://localhost:8080/ 2>/dev/null || echo "Visit http://localhost:8080/"
 
 docker-build: ## Build Docker image
 	docker build -t aegis:dev -f deployments/docker/Dockerfile .

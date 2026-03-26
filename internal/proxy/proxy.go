@@ -79,6 +79,33 @@ type ProxyResponse struct {
 	Body      string        `json:"body,omitempty"`
 	Reason    string        `json:"reason,omitempty"`
 	RequestID string        `json:"request_id"`
+	Layers    *LayerDetails `json:"layers,omitempty"`
+}
+
+// LayerDetails holds per-layer diagnostics returned when ?explain=true.
+type LayerDetails struct {
+	L1             *L1Detail                 `json:"l1"`
+	L2             *types.AuditResult        `json:"l2,omitempty"`
+	L3             *types.SanitizationResult `json:"l3,omitempty"`
+	TotalLatencyMs int64                     `json:"total_latency_ms"`
+	IsPHITouching  bool                      `json:"is_phi_touching"`
+	Thresholds     *ThresholdDetail          `json:"thresholds"`
+}
+
+// L1Detail is a human-friendly view of the Layer 1 classification.
+type L1Detail struct {
+	Class      string  `json:"class"`
+	ClassID    int     `json:"class_id"`
+	Confidence float64 `json:"confidence"`
+	LatencyMs  int64   `json:"latency_ms"`
+}
+
+// ThresholdDetail shows both base and effective thresholds.
+type ThresholdDetail struct {
+	AutoProceed        float64 `json:"auto_proceed"`
+	HoldAndNotify      float64 `json:"hold_and_notify"`
+	AppliedAutoProceed float64 `json:"applied_auto_proceed"`
+	AppliedHoldNotify  float64 `json:"applied_hold_and_notify"`
 }
 
 // ServeHTTP handles incoming proxy requests.
@@ -108,7 +135,12 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	requestID := fmt.Sprintf("req-%d-%d", time.Now().UnixNano(), p.nextID())
 	ctx := r.Context()
 
-	resp, err := p.handleRequest(ctx, requestID, &req)
+	record := &types.AuditRecord{
+		RequestID: requestID,
+		Timestamp: time.Now(),
+	}
+
+	resp, err := p.handleRequest(ctx, requestID, &req, record)
 	if err != nil {
 		slog.Error("proxy_request_failed", "request_id", requestID, "error", err)
 		writeJSON(w, http.StatusInternalServerError, &ProxyResponse{
@@ -124,16 +156,18 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if resp.Verdict == types.VerdictBlock {
 		status = http.StatusForbidden
 	}
+
+	explain := r.URL.Query().Get("explain") == "true"
+	if explain {
+		resp.Layers = p.buildLayerDetails(record)
+	}
+
 	writeJSON(w, status, resp)
 }
 
-func (p *Proxy) handleRequest(ctx context.Context, requestID string, req *ProxyRequest) (*ProxyResponse, error) {
+func (p *Proxy) handleRequest(ctx context.Context, requestID string, req *ProxyRequest, record *types.AuditRecord) (*ProxyResponse, error) {
 	start := time.Now()
 
-	record := &types.AuditRecord{
-		RequestID: requestID,
-		Timestamp: time.Now(),
-	}
 	defer func() {
 		record.TotalLatency = time.Since(start).Milliseconds()
 		metrics.TotalLatency.Observe(time.Since(start).Seconds())
@@ -301,6 +335,41 @@ func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(v)
+}
+
+func (p *Proxy) buildLayerDetails(record *types.AuditRecord) *LayerDetails {
+	ld := &LayerDetails{
+		TotalLatencyMs: record.TotalLatency,
+		IsPHITouching:  record.IsPHITouching,
+		L2:             record.Layer2,
+		L3:             record.Layer3,
+	}
+
+	if record.Layer1 != nil {
+		ld.L1 = &L1Detail{
+			Class:      record.Layer1.Class.String(),
+			ClassID:    int(record.Layer1.Class),
+			Confidence: record.Layer1.Confidence,
+			LatencyMs:  record.Layer1.LatencyMs,
+		}
+	}
+
+	autoThreshold := p.thresholds.AutoProceed
+	holdThreshold := p.thresholds.HoldAndNotify
+	appliedAuto := autoThreshold
+	appliedHold := holdThreshold
+	if record.IsPHITouching {
+		appliedAuto = clamp(autoThreshold*p.thresholds.PHIMultiplier, 0, 1)
+		appliedHold = clamp(holdThreshold*p.thresholds.PHIMultiplier, 0, 1)
+	}
+	ld.Thresholds = &ThresholdDetail{
+		AutoProceed:        autoThreshold,
+		HoldAndNotify:      holdThreshold,
+		AppliedAutoProceed: appliedAuto,
+		AppliedHoldNotify:  appliedHold,
+	}
+
+	return ld
 }
 
 func clamp(v, lo, hi float64) float64 {

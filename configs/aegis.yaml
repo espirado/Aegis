@@ -24,11 +24,11 @@ classifier:
 #   anthropic  — Anthropic Messages API (Claude)
 #   ollama     — Ollama (shorthand, sets base_url to localhost:11434)
 auditor:
-  provider: "openai"
-  base_url: ""          # e.g. http://localhost:11434/v1 for Ollama, https://api.openai.com/v1 for OpenAI
-  api_key: ""           # Set via AEGIS_AUDITOR_API_KEY env var
-  model: "gpt-4o-mini"  # or "claude-haiku-4-5-20251001", "llama3.2", etc.
-  timeout: 5s
+  provider: "ollama"
+  base_url: "http://localhost:11434/v1"
+  api_key: ""           # not needed for Ollama
+  model: "llama3.1:8b"  # local L2 auditor model
+  timeout: 30s          # Ollama can be slower than cloud APIs
 
 sanitizer:
   ner_model_path: "ml/models/phi_ner_v1.onnx"

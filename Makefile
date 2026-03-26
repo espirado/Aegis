@@ -2,7 +2,7 @@
        download-data download-mimic preprocess-data \
        train-classifier evaluate evaluate-l1 evaluate-phi evaluate-auditor \
        evaluate-ablation bench-latency evaluate-all \
-       run-dev build docker-build clean
+       run-dev run-proxy run-mock-agent test-live build docker-build clean
 
 # ─────────────────────────────────────────────────────────
 # Help
@@ -109,6 +109,17 @@ build: ## Build AEGIS proxy binary
 
 run-dev: ## Run proxy in development mode
 	go run ./cmd/aegis/
+
+run-proxy: ## Run AEGIS proxy (auto-detects ORT lib)
+	AEGIS_ORT_LIB_PATH=$$(find /opt/homebrew/lib /usr/local/lib -name 'libonnxruntime.dylib' 2>/dev/null | head -1) \
+		go run ./cmd/aegis/
+
+run-mock-agent: ## Run mock healthcare agent on :9000 (needs Ollama)
+	go run ./cmd/mock-agent/
+
+test-live: ## Run live smoke tests against running proxy
+	@chmod +x scripts/test_live.sh
+	@./scripts/test_live.sh
 
 docker-build: ## Build Docker image
 	docker build -t aegis:dev -f deployments/docker/Dockerfile .

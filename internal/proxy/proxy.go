@@ -152,6 +152,7 @@ func (p *Proxy) handleRequest(ctx context.Context, requestID string, req *ProxyR
 		return &ProxyResponse{Verdict: types.VerdictBlock, Reason: "classification error"}, nil
 	}
 	record.Layer1 = l1Result
+	record.IsPHITouching = l1Result.Class == types.ClassPHIExtraction
 
 	metrics.ClassificationDistribution.WithLabelValues(l1Result.Class.String()).Inc()
 	metrics.Layer1Latency.Observe(float64(l1Result.LatencyMs) / 1000.0)
